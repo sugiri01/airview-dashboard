@@ -1,0 +1,488 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Theme colors */
+  --primary-blue: #0099cc;
+  --secondary-blue: #00aeef;
+  --dark-blue: #003366;
+  --primary-green: #4caf50;
+  --secondary-green: #2ecc71;
+  --light-gray: #f3f4f6;
+  --dark-gray: #1f2937;
+  --darker-gray: #111827;
+  --white: #ffffff;
+  --red: #ef4444;
+}
+
+/* Custom base styles */
+@layer base {
+  /* Light mode (default) */
+  body {
+    @apply bg-gray-100 text-gray-800;
+  }
+
+  /* Dark mode styles */
+  .dark body {
+    @apply bg-gray-900 text-white;
+  }
+}
+
+/* Custom components */
+@layer components {
+  /* Sidebar styles */
+  .sidebar {
+    @apply h-full flex flex-col shadow-md;
+    background-color: var(--white);
+    color: #1f2937;
+  }
+
+  .dark .sidebar {
+    background-color: var(--dark-gray);
+    color: var(--white);
+  }
+
+  /* Menu item styles */
+  .menu-item {
+    @apply flex items-center p-3 cursor-pointer mx-2 rounded-md transition-colors;
+  }
+
+  .menu-item:hover {
+    @apply bg-blue-50;
+  }
+
+  .dark .menu-item:hover {
+    @apply bg-gray-700;
+  }
+
+  .menu-item-active {
+    background-color: rgba(0, 153, 204, 0.1);
+  }
+
+  .dark .menu-item-active {
+    @apply bg-gray-700;
+  }
+
+  .badge {
+    @apply bg-gray-200;
+  }
+
+  .dark .badge {
+    @apply bg-gray-700;
+  }
+
+  /* Toggle button */
+  .toggle-btn {
+    @apply bg-gray-200 hover:bg-gray-300;
+  }
+
+  .dark .toggle-btn {
+    @apply bg-gray-700 hover:bg-gray-600;
+  }
+
+  /* Dark mode toggle */
+  .dark-mode-toggle {
+    background-color: #d1d5db;
+  }
+
+  .dark .dark-mode-toggle {
+    background-color: #374151;
+  }
+
+  .dark-mode-toggle-handle {
+    transform: translateX(0);
+  }
+
+  .dark .dark-mode-toggle-handle {
+    transform: translateX(1.5rem);
+  }
+
+  .dark-mode-label::after {
+    content: "Light";
+  }
+
+  .dark .dark-mode-label::after {
+    content: "Dark";
+  }
+
+  /* Main content area */
+  .main-content {
+    @apply bg-gray-100;
+  }
+
+  .dark .main-content {
+    @apply bg-gray-900;
+  }
+
+  /* Header gradient */
+  .header-gradient {
+    background: linear-gradient(
+      90deg,
+      var(--primary-blue),
+      var(--secondary-blue),
+      var(--primary-green)
+    );
+  }
+
+  .dark .header-gradient {
+    @apply bg-gray-800;
+  }
+
+  /* Tabs */
+  .active-tab {
+    color: var(--primary-blue);
+    border-bottom: 2px solid var(--primary-blue);
+  }
+
+  .dark .active-tab {
+    color: var(--secondary-blue);
+    border-bottom: 2px solid var(--secondary-blue);
+  }
+
+  .inactive-tab {
+    @apply text-gray-600;
+  }
+
+  .dark .inactive-tab {
+    @apply text-gray-400;
+  }
+
+  .tab-indicator {
+    background: linear-gradient(
+      90deg,
+      var(--primary-blue),
+      var(--secondary-blue),
+      var(--primary-green)
+    );
+  }
+
+  /* Card and section titles */
+  .page-title,
+  .section-title,
+  .card-title,
+  .location-title,
+  .forecast-title {
+    color: var(--dark-blue);
+  }
+
+  .dark .page-title,
+  .dark .section-title,
+  .dark .card-title,
+  .dark .location-title,
+  .dark .forecast-title {
+    @apply text-white;
+  }
+
+  /* Card styles */
+  .card {
+    @apply rounded-lg shadow-md transition-colors transform hover:shadow-lg bg-white;
+  }
+
+  .dark .card {
+    @apply bg-gray-800;
+  }
+
+  .card-divider {
+    @apply border-gray-100;
+  }
+
+  .dark .card-divider {
+    @apply border-gray-700;
+  }
+
+  /* Profile card */
+  .profile-gradient {
+    background: linear-gradient(
+      90deg,
+      var(--primary-blue),
+      var(--secondary-blue)
+    );
+  }
+
+  /* Air quality card styles */
+  .air-quality-card {
+    @apply rounded-xl overflow-hidden;
+  }
+
+  .forecast-container {
+    background: linear-gradient(to right, #e6f7ff, white);
+  }
+
+  .dark .forecast-container {
+    background: linear-gradient(to right, rgba(0, 153, 204, 0.05), transparent);
+  }
+
+  .status-icon-bg {
+    background-color: rgba(76, 175, , 80, 0.2);
+  }
+
+  .aqi-meter-bg {
+    stroke: #eaeaea;
+  }
+
+  .dark .aqi-meter-bg {
+    stroke: #374151;
+  }
+
+  .chart-gradient {
+    stroke: url(#chartGradient);
+  }
+
+  .aqi-text {
+    fill: #111827;
+  }
+
+  .dark .aqi-text {
+    fill: #f9fafb;
+  }
+
+  .aqi-label {
+    fill: #6b7280;
+  }
+
+  .dark .aqi-label {
+    fill: #9ca3af;
+  }
+
+  .metric-value {
+    color: var(--dark-blue);
+  }
+
+  .dark .metric-value {
+    @apply text-white;
+  }
+
+  /* Metric cards */
+  .metric-card {
+    @apply rounded-lg p-2 shadow-sm border transition-all hover:shadow-md bg-gray-50 border-gray-100;
+  }
+
+  .dark .metric-card {
+    @apply bg-gray-700 border-gray-600;
+  }
+
+  /* Graph elements */
+  .graph-grid-line {
+    @apply bg-gray-200;
+  }
+
+  .dark .graph-grid-line {
+    @apply bg-gray-700;
+  }
+
+  .graph-dots {
+    fill: #e6f7ff;
+  }
+
+  .dark .graph-dots {
+    fill: rgba(0, 153, 204, 0.1);
+  }
+
+  .chart-projection {
+    stroke: var(--primary-blue);
+  }
+
+  .chart-point-outer {
+    fill: var(--primary-blue);
+  }
+
+  .chart-point-middle {
+    fill: white;
+  }
+
+  .dark .chart-point-middle {
+    fill: #1f2937;
+  }
+
+  .chart-point-inner {
+    fill: var(--primary-blue);
+  }
+
+  /* Statistic cards */
+  .statistic-card {
+    @apply rounded-lg p-3 shadow-sm transform transition-all hover:shadow-md hover:translate-y-px bg-white;
+  }
+
+  .dark .statistic-card {
+    @apply bg-gray-800;
+  }
+
+  .bg-primary-light {
+    background-color: rgba(0, 153, 204, 0.1);
+  }
+
+  .dark .bg-primary-light {
+    background-color: rgba(0, 153, 204, 0.2);
+  }
+
+  .bg-secondary-light {
+    background-color: rgba(0, 174, 239, 0.1);
+  }
+
+  .dark .bg-secondary-light {
+    background-color: rgba(0, 174, 239, 0.2);
+  }
+
+  .bg-green-light {
+    background-color: rgba(76, 175, 80, 0.1);
+  }
+
+  .dark .bg-green-light {
+    background-color: rgba(76, 175, 80, 0.2);
+  }
+
+  /* Table styles */
+  .table-header {
+    background-color: var(--dark-blue);
+    @apply text-white;
+  }
+
+  .dark .table-header {
+    background-color: rgba(0, 51, 102, 0.8);
+  }
+
+  .table-body {
+    @apply bg-white divide-gray-200;
+  }
+
+  .dark .table-body {
+    @apply bg-gray-800 divide-gray-700;
+  }
+
+  .table-cell-name {
+    color: var(--dark-blue);
+  }
+
+  .dark .table-cell-name {
+    @apply text-white;
+  }
+
+  .table-row-hover:hover {
+    @apply bg-gray-50;
+  }
+
+  .dark .table-row-hover:hover {
+    @apply bg-gray-700;
+  }
+
+  /* Status indicators */
+  .status-active {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .dark .status-active {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: var(--primary-green);
+  }
+
+  .status-inactive {
+    @apply bg-gray-100 text-gray-800;
+  }
+
+  .dark .status-inactive {
+    background-color: rgba(156, 163, 175, 0.2);
+    @apply text-gray-300;
+  }
+
+  /* Calendar event styles */
+  .calendar-event {
+    @apply py-2 flex items-center rounded-md p-1 transition-colors hover:bg-gray-50;
+  }
+
+  .dark .calendar-event {
+    @apply hover:bg-gray-700;
+  }
+
+  .event-title {
+    color: var(--dark-blue);
+  }
+
+  .dark .event-title {
+    @apply text-white;
+  }
+
+  .calendar-icon-bg {
+    background-color: rgba(0, 153, 204, 0.1);
+  }
+
+  .dark .calendar-icon-bg {
+    background-color: rgba(0, 153, 204, 0.2);
+  }
+
+  /* Button styles */
+  .btn-primary {
+    @apply text-white rounded shadow-sm transition-colors;
+    background-color: var(--primary-blue);
+  }
+
+  .btn-primary:hover {
+    background-color: #0088b3;
+  }
+
+  .btn-secondary {
+    @apply text-white rounded shadow-sm transition-colors;
+    background-color: var(--secondary-blue);
+  }
+
+  .btn-secondary:hover {
+    background-color: #009ad6;
+  }
+
+  /* Upload modal progress */
+  .upload-progress {
+    background: linear-gradient(
+      90deg,
+      var(--primary-blue),
+      var(--secondary-blue)
+    );
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-primary {
+    color: var(--primary-blue);
+  }
+
+  .text-secondary {
+    color: var(--secondary-blue);
+  }
+
+  .text-dark-theme {
+    color: var(--dark-blue);
+  }
+
+  .text-green-theme {
+    color: var(--primary-green);
+  }
+
+  .bg-primary {
+    background-color: var(--primary-blue);
+  }
+
+  .bg-secondary {
+    background-color: var(--secondary-blue);
+  }
+
+  .bg-dark-theme {
+    background-color: var(--dark-blue);
+  }
+
+  .bg-green-theme {
+    background-color: var(--primary-green);
+  }
+
+  .border-primary {
+    border-color: var(--primary-blue);
+  }
+
+  .border-dark-theme {
+    border-color: var(--dark-blue);
+  }
+
+  /* Add smooth transitions for dark mode toggling */
+  .color-transition {
+    @apply transition-colors duration-300;
+  }
+}
