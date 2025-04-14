@@ -14,18 +14,15 @@ import {
   Mail,
   UserPlus,
   Home,
-  Users,
-  Monitor,
   Wind,
   BarChart2,
-  Settings,
   Shield,
   Thermometer,
   Droplet
 } from "lucide-react";
 import { AQIMetrics } from "./AQIMetrics";
 import AQIStatistics from "./AQIStatistics";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 // Define types for your components
 type MenuItemProps = {
@@ -38,17 +35,17 @@ type MenuItemProps = {
 };
 
 // Define types for the data structures in ImpactTab
-type HealthImpactDataItem = {
+{/*type HealthImpactDataItem = {
   category: string;
   score: number;
   color: string;
-};
+};*/}
 
-type PopulationImpactDataItem = {
+{/*type PopulationImpactDataItem = {
   group: string;
   affected: number;
   risk: string;
-};
+};*/}
 
 type AQITrendDataItem = {
   date: string;
@@ -249,20 +246,20 @@ const Sidebar: React.FC<SidebarProps> = ({
 // ImpactTab Component (from the first file)
 const ImpactTab: React.FC = () => {
   // Sample data for health impact metrics
-  const healthImpactData: HealthImpactDataItem[] = [
+  {/*const healthImpactData: HealthImpactDataItem[] = [
     { category: 'Respiratory', score: 78, color: '#4ade80' },
     { category: 'Cardiovascular', score: 65, color: '#facc15' },
     { category: 'Productivity', score: 82, color: '#60a5fa' },
     { category: 'Sleep Quality', score: 71, color: '#a78bfa' },
-  ];
+  ];*/}
 
   // Sample data for population impact
-  const populationImpactData: PopulationImpactDataItem[] = [
+  {/*const populationImpactData: PopulationImpactDataItem[] = [
     { group: 'Children', affected: 120, risk: 'High' },
     { group: 'Elderly', affected: 85, risk: 'High' },
     { group: 'Asthmatics', affected: 150, risk: 'Severe' },
     { group: 'General', affected: 450, risk: 'Low' },
-  ];
+  ];*/}
 
   // Sample data for AQI trend
   const aqiTrendData: AQITrendDataItem[] = [
@@ -283,11 +280,11 @@ const ImpactTab: React.FC = () => {
     { id: 4, text: 'Remind sensitive individuals to have medication accessible', priority: 'Medium' },
   ];
 
-  const getTrendColor = (aqi: number): string => {
+  {/*const getTrendColor = (aqi: number): string => {
     if (aqi < 50) return '#4ade80';
     if (aqi < 100) return '#facc15';
     return '#f87171';
-  };
+  };*/}
 
   const getPriorityClass = (priority: string): string => {
     switch (priority) {
@@ -298,7 +295,7 @@ const ImpactTab: React.FC = () => {
     }
   };
 
-  const getRiskClass = (risk: string): string => {
+  {/*const getRiskClass = (risk: string): string => {
     switch (risk) {
       case 'Severe': return 'text-red-600';
       case 'High': return 'text-orange-500';
@@ -306,7 +303,7 @@ const ImpactTab: React.FC = () => {
       case 'Low': return 'text-green-500';
       default: return 'text-gray-500';
     }
-  };
+  };*/}
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 dark:text-white rounded-lg shadow-md">

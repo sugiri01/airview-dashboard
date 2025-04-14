@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, 
   CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  AreaChart, Area, PieChart, Pie, Cell
+  Cell
 } from 'recharts';
 import { 
   Bell, MapPin, Calendar, Filter, BarChart2, 
-  Activity, AlertTriangle, Clock, DownloadCloud,
+  Activity, AlertTriangle, DownloadCloud,
   Moon, Sun
 } from 'lucide-react';
 
@@ -36,20 +36,7 @@ const locationData = [
   { name: 'Lobby', AQI: 32, color: '#9F7AEA' },
 ];
 
-const hourlyData = [
-  { hour: '12AM', AQI: 38 },
-  { hour: '2AM', AQI: 32 },
-  { hour: '4AM', AQI: 30 },
-  { hour: '6AM', AQI: 42 },
-  { hour: '8AM', AQI: 52 },
-  { hour: '10AM', AQI: 48 },
-  { hour: '12PM', AQI: 44 },
-  { hour: '2PM', AQI: 47 },
-  { hour: '4PM', AQI: 51 },
-  { hour: '6PM', AQI: 49 },
-  { hour: '8PM', AQI: 43 },
-  { hour: '10PM', AQI: 40 },
-];
+// Removed unused hourlyData
 
 const anomalyData = [
   { id: 1, event: 'PM2.5 spike', date: 'March 15', location: 'Boston', value: 86, status: 'Resolved' },
@@ -57,12 +44,7 @@ const anomalyData = [
   { id: 3, event: 'NO2 spike', date: 'March 29', location: 'New York', value: 65, status: 'Monitoring' },
 ];
 
-const pieData = [
-  { name: 'Excellent (0-50)', value: 62, color: '#48BB78' },
-  { name: 'Good (51-100)', value: 34, color: '#ECC94B' },
-  { name: 'Moderate (101-150)', value: 4, color: '#ED8936' },
-  { name: 'Unhealthy', value: 0, color: '#F56565' },
-];
+// Removed unused pieData
 
 // Quality index levels
 const qualityLevels = [
