@@ -18,8 +18,14 @@ import {
   Monitor,
   Wind,
   BarChart2,
-  Settings
+  Settings,
+  Shield,
+  Thermometer,
+  Droplet
 } from "lucide-react";
+import { AQIMetrics } from "./AQIMetrics";
+import AQIStatistics from "./AQIStatistics";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 // Define types for your components
 type MenuItemProps = {
@@ -28,6 +34,32 @@ type MenuItemProps = {
   badge?: string | number;
   collapsed: boolean;
   active?: boolean;
+  onClick?: () => void;
+};
+
+// Define types for the data structures in ImpactTab
+type HealthImpactDataItem = {
+  category: string;
+  score: number;
+  color: string;
+};
+
+type PopulationImpactDataItem = {
+  group: string;
+  affected: number;
+  risk: string;
+};
+
+type AQITrendDataItem = {
+  date: string;
+  aqi: number;
+  impact: string;
+};
+
+type RecommendationItem = {
+  id: number;
+  text: string;
+  priority: string;
 };
 
 type SidebarProps = {
@@ -35,6 +67,8 @@ type SidebarProps = {
   setCollapsed: (collapsed: boolean) => void;
   darkMode: boolean;
   setDarkMode: (darkMode: boolean) => void;
+  onMenuItemClick: (view: string) => void;
+  currentView: string;
 };
 
 type StatisticItem = {
@@ -68,9 +102,13 @@ const MenuItem: React.FC<MenuItemProps> = ({
   badge,
   collapsed,
   active = false,
+  onClick,
 }) => {
   return (
-    <div className={`flex items-center p-3 cursor-pointer mx-2 rounded-md transition-colors ${active ? "bg-blue-50 dark:bg-gray-700 text-primary" : "hover:bg-blue-50 dark:hover:bg-gray-700"}`}>
+    <div 
+      className={`flex items-center p-3 cursor-pointer mx-2 rounded-md transition-colors ${active ? "bg-blue-50 dark:bg-gray-700 text-primary" : "hover:bg-blue-50 dark:hover:bg-gray-700"}`}
+      onClick={onClick}
+    >
       <div className="flex items-center justify-center w-6">
         {icon}
       </div>
@@ -86,7 +124,14 @@ const MenuItem: React.FC<MenuItemProps> = ({
   );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, darkMode, setDarkMode }) => {
+const Sidebar: React.FC<SidebarProps> = ({ 
+  collapsed, 
+  setCollapsed, 
+  darkMode, 
+  setDarkMode,
+  onMenuItemClick,
+  currentView
+}) => {
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
@@ -159,43 +204,24 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, darkMode, se
           icon={<Home size={18} />}
           title="Dashboard"
           collapsed={collapsed}
-          active={true}
-        />
-
-        <MenuItem
-          icon={<Users size={18} />}
-          title="Users"
-          collapsed={collapsed}
-        />
-
-        <MenuItem
-          icon={<Monitor size={18} />}
-          title="Devices"
-          collapsed={collapsed}
+          active={currentView === "dashboard"}
+          onClick={() => onMenuItemClick("dashboard")}
         />
 
         <MenuItem
           icon={<Wind size={18} />}
           title="AQI Metrics"
           collapsed={collapsed}
+          active={currentView === "metrics"}
+          onClick={() => onMenuItemClick("metrics")}
         />
 
         <MenuItem
           icon={<BarChart2 size={18} />}
           title="Statistics"
           collapsed={collapsed}
-        />
-
-        <MenuItem
-          icon={<Calendar size={18} />}
-          title="Calendar"
-          collapsed={collapsed}
-        />
-
-        <MenuItem
-          icon={<Settings size={18} />}
-          title="Settings"
-          collapsed={collapsed}
+          active={currentView === "statistics"}
+          onClick={() => onMenuItemClick("statistics")}
         />
       </div>
 
@@ -220,10 +246,287 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, darkMode, se
   );
 };
 
+// ImpactTab Component (from the first file)
+const ImpactTab: React.FC = () => {
+  // Sample data for health impact metrics
+  const healthImpactData: HealthImpactDataItem[] = [
+    { category: 'Respiratory', score: 78, color: '#4ade80' },
+    { category: 'Cardiovascular', score: 65, color: '#facc15' },
+    { category: 'Productivity', score: 82, color: '#60a5fa' },
+    { category: 'Sleep Quality', score: 71, color: '#a78bfa' },
+  ];
+
+  // Sample data for population impact
+  const populationImpactData: PopulationImpactDataItem[] = [
+    { group: 'Children', affected: 120, risk: 'High' },
+    { group: 'Elderly', affected: 85, risk: 'High' },
+    { group: 'Asthmatics', affected: 150, risk: 'Severe' },
+    { group: 'General', affected: 450, risk: 'Low' },
+  ];
+
+  // Sample data for AQI trend
+  const aqiTrendData: AQITrendDataItem[] = [
+    { date: 'Apr 1', aqi: 42, impact: 'Low' },
+    { date: 'Apr 2', aqi: 56, impact: 'Moderate' },
+    { date: 'Apr 3', aqi: 38, impact: 'Low' },
+    { date: 'Apr 4', aqi: 62, impact: 'Moderate' },
+    { date: 'Apr 5', aqi: 45, impact: 'Low' },
+    { date: 'Apr 6', aqi: 35, impact: 'Low' },
+    { date: 'Apr 7', aqi: 48, impact: 'Low' },
+  ];
+
+  // Sample recommendations based on current air quality
+  const recommendations: RecommendationItem[] = [
+    { id: 1, text: 'Close windows during peak pollution hours (8-10 AM)', priority: 'High' },
+    { id: 2, text: 'Schedule outdoor activities after 11 AM when AQI improves', priority: 'Medium' },
+    { id: 3, text: 'Increase air purifier settings in conference rooms', priority: 'High' },
+    { id: 4, text: 'Remind sensitive individuals to have medication accessible', priority: 'Medium' },
+  ];
+
+  const getTrendColor = (aqi: number): string => {
+    if (aqi < 50) return '#4ade80';
+    if (aqi < 100) return '#facc15';
+    return '#f87171';
+  };
+
+  const getPriorityClass = (priority: string): string => {
+    switch (priority) {
+      case 'High': return 'bg-red-100 text-red-800';
+      case 'Medium': return 'bg-yellow-100 text-yellow-800';
+      case 'Low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getRiskClass = (risk: string): string => {
+    switch (risk) {
+      case 'Severe': return 'text-red-600';
+      case 'High': return 'text-orange-500';
+      case 'Moderate': return 'text-yellow-500';
+      case 'Low': return 'text-green-500';
+      default: return 'text-gray-500';
+    }
+  };
+
+  return (
+    <div className="p-6 bg-white dark:bg-gray-800 dark:text-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Air Quality Impact Assessment</h1>
+      
+      {/* Impact Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 rounded-lg p-6">
+          <div className="flex items-center mb-4">
+            <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Current Impact Status</h2>
+          </div>
+          <div className="flex items-center justify-center p-4">
+            <div className="text-center">
+              <div className="text-5xl font-bold text-green-500 mb-2">Low</div>
+              <p className="text-gray-600 dark:text-gray-300">Overall health impact assessment based on current AQI readings</p>
+              <div className="mt-4 p-3 bg-green-100 dark:bg-green-900 dark:bg-opacity-20 rounded-md text-green-800 dark:text-green-400 text-sm">
+                Air quality is acceptable with minimal risk to public health
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+          <div className="flex items-center mb-4">
+            <AlertTriangle className="w-6 h-6 text-yellow-500 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Key Concerns</h2>
+          </div>
+          <ul className="space-y-2">
+            <li className="flex items-start">
+              <span className="inline-block w-2 h-2 rounded-full bg-yellow-400 mt-2 mr-2"></span>
+              <span className="text-gray-700 dark:text-gray-300">Slight elevation in O3 levels (30.0 μg/m³)</span>
+            </li>
+            <li className="flex items-start">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-400 mt-2 mr-2"></span>
+              <span className="text-gray-700 dark:text-gray-300">PM2.5 levels within acceptable range (10.05 μg/m³)</span>
+            </li>
+            <li className="flex items-start">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-400 mt-2 mr-2"></span>
+              <span className="text-gray-700 dark:text-gray-300">NO2 levels below threshold of concern (8.57 μg/m³)</span>
+            </li>
+            <li className="flex items-start">
+              <span className="inline-block w-2 h-2 rounded-full bg-yellow-400 mt-2 mr-2"></span>
+              <span className="text-gray-700 dark:text-gray-300">Possible impact on sensitive individuals</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      {/* Health Impact Metrics 
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Health Impact Metrics</h2>
+          <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Higher score = Better condition)</span>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={healthImpactData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="category" />
+              <YAxis domain={[0, 100]} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="score" name="Health Score" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+              {/* Removed the nested Bar components which were causing the error */} 
+            {/* </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div> */}
+      
+      {/* Population Impact 
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <Users className="w-6 h-6 text-indigo-500 dark:text-indigo-400 mr-2" />
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Population Impact</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden">
+            <thead className="bg-gray-100 dark:bg-gray-700">
+              <tr>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Demographic Group</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Estimated Affected</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Risk Level</th>
+                <th className="py-3 px-4 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Recommended Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {populationImpactData.map((group, index) => (
+                <tr key={index}>
+                  <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">{group.group}</td>
+                  <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">{group.affected}</td>
+                  <td className="py-3 px-4 text-sm">
+                    <span className={`font-medium ${getRiskClass(group.risk)}`}>{group.risk}</span>
+                  </td>
+                  <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-300">
+                    {group.risk === 'Low' ? 'Normal activities' : 'Limit outdoor exposure'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div> */}
+      
+      {/* AQI Trend and Impact */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <Wind className="w-6 h-6 text-cyan-500 dark:text-cyan-400 mr-2" />
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">AQI Trend & Impact Correlation</h2>
+        </div>
+        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={aqiTrendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="aqi" 
+                name="AQI Value" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                dot={{ r: 6, strokeWidth: 2 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      
+      {/* Environmental Factors */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
+          <div className="flex items-center">
+            <Thermometer className="w-6 h-6 text-red-500 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Environmental Factors</h2>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium">Temperature</h3>
+                <p className="text-2xl font-bold text-gray-800 dark:text-white">32°C</p>
+              </div>
+              <Thermometer className="h-8 w-8 text-red-500" />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">High temperatures may increase ozone formation</p>
+          </div>
+          
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium">Humidity</h3>
+                <p className="text-2xl font-bold text-gray-800 dark:text-white">68%</p>
+              </div>
+              <Droplet className="h-8 w-8 text-blue-500" />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Moderate humidity, minimal particulate suppression</p>
+          </div>
+          
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium">Wind Speed</h3>
+                <p className="text-2xl font-bold text-gray-800 dark:text-white">8 km/h</p>
+              </div>
+              <Wind className="h-8 w-8 text-cyan-500" />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Light wind providing moderate pollutant dispersion</p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Recommendations */}
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Recommended Actions</h2>
+        <div className="space-y-3">
+          {recommendations.map((rec) => (
+            <div key={rec.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 flex items-start">
+              <div className={`text-xs font-medium px-2 py-1 rounded ${getPriorityClass(rec.priority)} mr-3 whitespace-nowrap mt-1`}>
+                {rec.priority}
+              </div>
+              <p className="text-gray-700 dark:text-gray-300">{rec.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Economic Impact Section */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Economic Impact</h2>
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-5">
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Based on current air quality levels, the estimated economic impact is minimal:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-md shadow-sm">
+              <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">Productivity Loss</h3>
+              <p className="text-3xl font-bold text-green-600">0.3%</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Estimated decrease in workplace productivity</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-md shadow-sm">
+              <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">Healthcare Costs</h3>
+              <p className="text-3xl font-bold text-green-600">₹2,450</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Estimated daily healthcare costs due to air quality</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AirViewDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("Summary");
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [currentView, setCurrentView] = useState<string>("dashboard"); 
 
   // When darkMode changes, update the document class
   useEffect(() => {
@@ -267,6 +570,11 @@ const AirViewDashboard: React.FC = () => {
   // Forecast hours data
   const forecastHours: string[] = ["04:00", "05:00", "06:00", "07:00", "08:00", "09:00"];
 
+  // Function to handle menu item clicks
+  const handleMenuItemClick = (view: string) => {
+    setCurrentView(view);
+  };
+
   // Helper function to get the appropriate color class for stats
   const getStatIconClass = (color: string): string => {
     switch (color) {
@@ -283,66 +591,15 @@ const AirViewDashboard: React.FC = () => {
     }
   };
 
-  return (
-    <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
-      {/* Sidebar */}
-      <Sidebar 
-        collapsed={collapsed} 
-        setCollapsed={setCollapsed} 
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900 dark:text-white">
-        <div className="p-4">
-          {/* Header */}
-          <div className="flex items-center mb-4 p-3 rounded-lg shadow-md text-white bg-gradient-to-r from-blue-500 via-blue-400 to-green-500 dark:from-blue-600 dark:via-blue-500 dark:to-green-600">
-            <div className="flex items-center">
-              <Menu className="w-5 h-5 mr-2" />
-              <ChevronLeft className="w-5 h-5 mr-2" />
-              <h1 className="font-medium text-lg">Air Quality Dashboard 0082</h1>
-            </div>
-            <div className="ml-auto flex items-center space-x-2">
-              <span className="text-sm">Unreplicated</span>
-              <div className="flex items-center rounded-md px-2 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors">
-                <Download className="w-4 h-4 mr-1" />
-                <span className="text-xs">CSV</span>
-              </div>
-              <div className="flex items-center rounded-md px-2 py-1 bg-white bg-opacity-20">
-                <span className="text-xs mr-1">@phoenix</span>
-                <span className="text-xs mr-1">@steve</span>
-                <span className="text-xs">+5</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="border-b mb-4 dark:border-gray-700">
-            <div className="flex">
-              {["Summary", "Impact", "Causes", "Response", "Remediations"].map((tab) => (
-                <button
-                  key={tab}
-                  className={`px-4 py-2 text-sm font-medium relative ${
-                    activeTab === tab 
-                      ? "text-blue-500 border-b-2 border-blue-500" 
-                      : "text-gray-600 dark:text-gray-400"
-                  }`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab}
-                  {activeTab === tab && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-blue-400 to-green-500"></div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Content area */}
-          <div>
-            <h2 className="text-lg font-medium mb-4 text-blue-900 dark:text-blue-100">Profile Overview</h2>
-
+  // Function to render the appropriate content based on active tab
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "Impact":
+        return <ImpactTab />;
+      case "Summary":
+      default:
+        return (
+          <>
             {/* Profile Card */}
             <div className="mb-6">
               <div className="rounded-lg shadow-md bg-white dark:bg-gray-800 overflow-hidden">
@@ -381,7 +638,8 @@ const AirViewDashboard: React.FC = () => {
                         <p className="text-gray-500 dark:text-gray-400 text-xs">DEVICES</p>
                       </div>
                       <div className="flex-1 text-center border-l border-r border-gray-100 dark:border-gray-700">
-                        <p className="text-lg font-bold text-green-500">38</p>
+
+                      <p className="text-lg font-bold text-green-500">38</p>
                         <p className="text-gray-500 dark:text-gray-400 text-xs">ONLINE</p>
                       </div>
                       <div className="flex-1 text-center">
@@ -694,10 +952,91 @@ const AirViewDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+          </>
+        );
+    }
+  };
 
-            {/* Upload modal simulation */}
-            
+  return (
+    <div className={`flex h-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
+      {/* Sidebar with modified MenuItem to handle clicks */}
+      <Sidebar 
+        collapsed={collapsed} 
+        setCollapsed={setCollapsed} 
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        onMenuItemClick={handleMenuItemClick}
+        currentView={currentView}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900 dark:text-white">
+        <div className="p-4">
+          {/* Header */}
+          <div className="flex items-center mb-4 p-3 rounded-lg shadow-md text-white bg-gradient-to-r from-blue-500 via-blue-400 to-green-500 dark:from-blue-600 dark:via-blue-500 dark:to-green-600">
+            <div className="flex items-center">
+              <Menu className="w-5 h-5 mr-2" />
+              <ChevronLeft className="w-5 h-5 mr-2" />
+              <h1 className="font-medium text-lg">
+                {currentView === "metrics" ? "Air Quality Metrics" : 
+                 currentView === "statistics" ? "Air Quality Statistics" : 
+                 "Air Quality Dashboard 0082"}
+              </h1>
+            </div>
+            <div className="ml-auto flex items-center space-x-2">
+              <span className="text-sm">Unreplicated</span>
+              <div className="flex items-center rounded-md px-2 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors">
+                <Download className="w-4 h-4 mr-1" />
+                <span className="text-xs">CSV</span>
+              </div>
+              <div className="flex items-center rounded-md px-2 py-1 bg-white bg-opacity-20">
+                <span className="text-xs mr-1">@phoenix</span>
+                <span className="text-xs mr-1">@steve</span>
+                <span className="text-xs">+5</span>
+              </div>
+            </div>
           </div>
+
+          {/* Render main dashboard or AQI metrics based on current view */}
+          {currentView === "metrics" ? (
+            <AQIMetrics />
+          ) : currentView === "statistics" ? (
+            <AQIStatistics />
+          ) : (
+            <>
+              {/* Dashboard tabs */}
+              <div className="border-b mb-4 dark:border-gray-700">
+                <div className="flex">
+                  {["Summary", "Impact", "Causes", "Response", "Remediations"].map((tab) => (
+                    <button
+                      key={tab}
+                      className={`px-4 py-2 text-sm font-medium relative ${
+                        activeTab === tab 
+                          ? "text-blue-500 border-b-2 border-blue-500" 
+                          : "text-gray-600 dark:text-gray-400"
+                      }`}
+                      onClick={() => setActiveTab(tab)}
+                    >
+                      {tab}
+                      {activeTab === tab && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-blue-400 to-green-500"></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Content area - Render different content based on active tab */}
+              <div>
+                <h2 className="text-lg font-medium mb-4 text-blue-900 dark:text-blue-100">
+                  {activeTab === "Impact" ? "Impact Overview" : "Profile Overview"}
+                </h2>
+
+                {/* Render appropriate tab content */}
+                {renderTabContent()}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
